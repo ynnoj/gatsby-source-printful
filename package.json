@@ -1,0 +1,19 @@
+{
+  "name": "gatsby-source-printful",
+  "version": "1.0.0",
+  "description": "Gatsby source plugin for pulling product and variant data from Printful",
+  "main": "index.js",
+  "repository": "git@github.com:ynnoj/gatsby-source-printful.git",
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin",
+    "gatsby-source-plugin",
+    "printful"
+  ],
+  "author": "Jonathan Steele <jonathan@steele.pro> (https://steele.pro)",
+  "license": "MIT",
+  "dependencies": {
+    "gatsby-source-filesystem": "^2.1.35",
+    "isomorphic-unfetch": "^3.0.0"
+  }
+}
