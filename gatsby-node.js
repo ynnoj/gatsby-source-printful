@@ -4,28 +4,46 @@ const PrintfulClient = require('./lib/printful')
 const { parseNameForSlug, parsePriceString } = require('./lib/utils')
 
 exports.sourceNodes = async (
-  { actions: { createNode }, createContentDigest },
+  { actions: { createNode }, cache, createContentDigest, createNodeId, store },
   { apiKey }
 ) => {
   const printful = new PrintfulClient({
     apiKey
   })
 
-  const { result: products } = await printful.get('products')
+  const { result } = await printful.get('products')
+  const products = await Promise.all(
+    result.map(async ({ id }) => await printful.get(`products/${id}`))
+  )
 
   const processProduct = async ({ product, variantIds }) => {
-    const nodeContent = JSON.stringify(product)
+    const { external_id, variants, ...rest } = product
+
+    let productImageNode
+
+    try {
+      const { id } = await createRemoteFileNode({
+        url: product.thumbnail_url,
+        parentNodeId: product.external_id,
+        store,
+        cache,
+        createNode,
+        createNodeId
+      })
+
+      productImageNode = id
+    } catch (e) {
+      console.error('gatsby-source-printful:', e)
+    }
 
     const nodeData = {
-      ...product,
+      ...rest,
       slug: parseNameForSlug(product.name),
-      variantIds,
+      variants___NODE: variantIds,
+      productImage___NODE: productImageNode,
       id: product.external_id,
-      parent: null,
-      children: [],
       internal: {
         type: `PrintfulProduct`,
-        content: nodeContent,
         contentDigest: createContentDigest(product)
       }
     }
@@ -34,18 +52,34 @@ exports.sourceNodes = async (
   }
 
   const processVariant = async ({ variant }) => {
-    const nodeContent = JSON.stringify(variant)
+    const { external_id, variant_id, ...rest } = variant
+    const previewFile = variant.files.find(file => file.type === `preview`)
+
+    let variantImageNode
+
+    try {
+      const { id } = await createRemoteFileNode({
+        url: previewFile.preview_url,
+        parentNodeId: variant.external_id,
+        store,
+        cache,
+        createNode,
+        createNodeId
+      })
+
+      variantImageNode = id
+    } catch (e) {
+      console.error('gatsby-source-printful:', e)
+    }
 
     const nodeData = {
-      ...variant,
-      retail_price: parsePriceString(variant.retail_price),
+      ...rest,
       slug: parseNameForSlug(variant.name),
+      retail_price: parsePriceString(variant.retail_price),
+      variantImage___NODE: variantImageNode,
       id: variant.external_id,
-      parent: null,
-      children: [],
       internal: {
         type: `PrintfulVariant`,
-        content: nodeContent,
         contentDigest: createContentDigest(variant)
       }
     }
@@ -54,77 +88,18 @@ exports.sourceNodes = async (
   }
 
   await Promise.all(
-    products.map(async ({ id }) => {
-      const {
-        result: { sync_product: product, sync_variants }
-      } = await printful.get(`products/${id}`)
+    products.map(
+      async ({
+        result: { sync_product: product, sync_variants: variants }
+      }) => {
+        await variants.map(async variant =>
+          createNode(await processVariant({ variant }))
+        )
 
-      await sync_variants.map(async variant =>
-        createNode(await processVariant({ variant }))
-      )
+        const variantIds = variants.map(({ external_id: id }) => id)
 
-      const variantIds = sync_variants.map(({ external_id: id }) => id)
-
-      createNode(await processProduct({ product, variantIds }))
-    })
+        createNode(await processProduct({ product, variantIds }))
+      }
+    )
   )
-}
-
-exports.onCreateNode = async ({
-  node,
-  actions: { createNode },
-  store,
-  cache,
-  createNodeId,
-  getNode
-}) => {
-  const createNodeFromURL = async url => {
-    return await createRemoteFileNode({
-      url,
-      store,
-      cache,
-      createNode,
-      createNodeId
-    })
-  }
-
-  if (node.internal.type === `PrintfulProduct`) {
-    let productImageNode
-
-    try {
-      productImageNode = await createNodeFromURL(node.thumbnail_url)
-    } catch (e) {
-      console.error('gatsby-source-printful: ERROR', e)
-    }
-
-    if (productImageNode) node.productImage___NODE = productImageNode.id
-
-    const getVariantNodes = async () => {
-      let variantNodes = []
-
-      await node.variantIds.map(async variantId => {
-        const variantNode = await getNode(variantId)
-
-        if (variantNode) variantNodes.push(variantNode.id)
-      })
-
-      return variantNodes
-    }
-
-    node.variants___NODE = await getVariantNodes()
-  }
-
-  if (node.internal.type === `PrintfulVariant`) {
-    const previewFile = node.files.find(file => file.type === `preview`)
-
-    let variantImageNode
-
-    try {
-      variantImageNode = await createNodeFromURL(previewFile.preview_url)
-    } catch (e) {
-      console.error('gatsby-source-printful: ERROR', e)
-    }
-
-    if (variantImageNode) node.variantImage___NODE = variantImageNode.id
-  }
 }
