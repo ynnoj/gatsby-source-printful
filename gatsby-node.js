@@ -24,7 +24,7 @@ exports.sourceNodes = async (
     try {
       const { id } = await createRemoteFileNode({
         url: product.thumbnail_url,
-        parentNodeId: product.external_id,
+        parentNodeId: external_id,
         store,
         cache,
         createNode,
@@ -41,7 +41,7 @@ exports.sourceNodes = async (
       slug: parseNameForSlug(product.name),
       variants___NODE: variantIds,
       productImage___NODE: productImageNode,
-      id: product.external_id,
+      id: external_id,
       internal: {
         type: `PrintfulProduct`,
         contentDigest: createContentDigest(product)
@@ -60,7 +60,7 @@ exports.sourceNodes = async (
     try {
       const { id } = await createRemoteFileNode({
         url: previewFile.preview_url,
-        parentNodeId: variant.external_id,
+        parentNodeId: external_id,
         store,
         cache,
         createNode,
@@ -77,7 +77,7 @@ exports.sourceNodes = async (
       slug: parseNameForSlug(variant.name),
       retail_price: parsePriceString(variant.retail_price),
       variantImage___NODE: variantImageNode,
-      id: variant.external_id,
+      id: external_id,
       internal: {
         type: `PrintfulVariant`,
         contentDigest: createContentDigest(variant)
