@@ -16,8 +16,8 @@ exports.sourceNodes = async (
     result.map(async ({ id }) => await printful.get(`products/${id}`))
   )
 
-  const processProduct = async ({ product, variantIds }) => {
-    const { external_id, variants, ...rest } = product
+  const processProduct = async ({ product, variants }) => {
+    const { external_id, variants: variantCount, ...rest } = product
 
     let productImageNode
 
@@ -39,7 +39,7 @@ exports.sourceNodes = async (
     const nodeData = {
       ...rest,
       slug: parseNameForSlug(product.name),
-      variants___NODE: variantIds,
+      variants___NODE: variants.map(({ external_id: id }) => id),
       productImage___NODE: productImageNode,
       id: external_id,
       internal: {
@@ -51,7 +51,7 @@ exports.sourceNodes = async (
     return nodeData
   }
 
-  const processVariant = async ({ variant }) => {
+  const processVariant = async ({ variant, product }) => {
     const { external_id, variant_id, ...rest } = variant
     const previewFile = variant.files.find(file => file.type === `preview`)
 
@@ -76,6 +76,7 @@ exports.sourceNodes = async (
       ...rest,
       slug: parseNameForSlug(variant.name),
       retail_price: parsePriceString(variant.retail_price),
+      parentProduct___NODE: product.external_id,
       variantImage___NODE: variantImageNode,
       id: external_id,
       internal: {
@@ -93,12 +94,10 @@ exports.sourceNodes = async (
         result: { sync_product: product, sync_variants: variants }
       }) => {
         await variants.map(async variant =>
-          createNode(await processVariant({ variant }))
+          createNode(await processVariant({ variant, product }))
         )
 
-        const variantIds = variants.map(({ external_id: id }) => id)
-
-        createNode(await processProduct({ product, variantIds }))
+        createNode(await processProduct({ product, variants }))
       }
     )
   )
