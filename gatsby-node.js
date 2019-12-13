@@ -11,10 +11,24 @@ exports.sourceNodes = async (
     apiKey
   })
 
-  const { result } = await printful.get('products')
+  const { result } = await printful.get('sync/products')
   const products = await Promise.all(
-    result.map(async ({ id }) => await printful.get(`products/${id}`))
+    result.map(async ({ id }) => await printful.get(`sync/products/${id}`))
   )
+  const { result: countries } = await printful.get(`countries`)
+
+  const processCountry = async country => {
+    const nodeData = {
+      ...country,
+      id: `country-${country.code}`,
+      internal: {
+        type: `PrintfulCountry`,
+        contentDigest: createContentDigest(country)
+      }
+    }
+
+    return nodeData
+  }
 
   const processProduct = async ({ product, variants }) => {
     const { external_id, variants: variantCount, ...rest } = product
@@ -100,5 +114,9 @@ exports.sourceNodes = async (
         createNode(await processProduct({ product, variants }))
       }
     )
+  )
+
+  await Promise.all(
+    countries.map(async country => createNode(await processCountry(country)))
   )
 }
