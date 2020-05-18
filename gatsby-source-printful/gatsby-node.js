@@ -17,7 +17,7 @@ exports.sourceNodes = async (
   )
   const { result: countries } = await printful.get(`countries`)
 
-  const processCountry = async country => {
+  const processCountry = async (country) => {
     const nodeData = {
       ...country,
       id: `country-${country.code}`,
@@ -67,7 +67,7 @@ exports.sourceNodes = async (
 
   const processVariant = async ({ variant, product }) => {
     const { external_id, variant_id, ...rest } = variant
-    const previewFile = variant.files.find(file => file.type === `preview`)
+    const previewFile = variant.files.find((file) => file.type === `preview`)
 
     let variantImageNode
 
@@ -107,7 +107,7 @@ exports.sourceNodes = async (
       async ({
         result: { sync_product: product, sync_variants: variants }
       }) => {
-        await variants.map(async variant =>
+        await variants.map(async (variant) =>
           createNode(await processVariant({ variant, product }))
         )
 
@@ -117,6 +117,6 @@ exports.sourceNodes = async (
   )
 
   await Promise.all(
-    countries.map(async country => createNode(await processCountry(country)))
+    countries.map(async (country) => createNode(await processCountry(country)))
   )
 }
