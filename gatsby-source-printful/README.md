@@ -2,6 +2,8 @@
 
 👕 Gatsby source plugin for pulling product and variant data from [Printful](https://printful.com)
 
+• [Demo](https://gatsby-source-printful.now.sh)
+
 ## Install
 
 ```sh
