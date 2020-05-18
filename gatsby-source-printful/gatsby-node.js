@@ -11,7 +11,28 @@ exports.sourceNodes = async (
     apiKey
   })
 
-  const { result } = await printful.get('sync/products')
+  const getAllProducts = async () => {
+    let records = []
+    let keepGoing = true
+    let offset = 0
+
+    while (keepGoing) {
+      const { result } = await printful.get(
+        `sync/products?limit=100&offset=${offset}`
+      )
+
+      records = [...records, ...result]
+      offset += 1
+
+      if (result.length < 100) {
+        keepGoing = false
+
+        return records
+      }
+    }
+  }
+
+  const result = await getAllProducts()
   const products = await Promise.all(
     result.map(async ({ id }) => await printful.get(`sync/products/${id}`))
   )
