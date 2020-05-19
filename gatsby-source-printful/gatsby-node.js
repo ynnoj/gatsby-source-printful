@@ -113,19 +113,21 @@ exports.sourceNodes = async (
 
     let variantImageNode
 
-    try {
-      const { id } = await createRemoteFileNode({
-        url: previewFile.preview_url,
-        parentNodeId: external_id,
-        store,
-        cache,
-        createNode,
-        createNodeId
-      })
+    if (previewFile) {
+      try {
+        const { id } = await createRemoteFileNode({
+          url: previewFile.preview_url,
+          parentNodeId: external_id,
+          store,
+          cache,
+          createNode,
+          createNodeId
+        })
 
-      variantImageNode = id
-    } catch (e) {
-      console.error('gatsby-source-printful:', e)
+        variantImageNode = id
+      } catch (e) {
+        console.error('gatsby-source-printful:', e)
+      }
     }
 
     const nodeData = {
