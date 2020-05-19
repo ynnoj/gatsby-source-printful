@@ -22,7 +22,7 @@ exports.sourceNodes = async (
       )
 
       records = [...records, ...result]
-      offset += 1
+      offset += 100
 
       if (result.length < 100) {
         keepGoing = false
