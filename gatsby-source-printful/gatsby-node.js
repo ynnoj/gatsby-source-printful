@@ -14,6 +14,11 @@ exports.sourceNodes = async (
   },
   { apiKey, paginationLimit = 20 }
 ) => {
+  if (!apiKey)
+    return reporter.panic(
+      'gatsby-source-printful: You must provide your Printful API key'
+    )
+
   if (
     !paginationLimit ||
     !Number.isInteger(paginationLimit) ||
