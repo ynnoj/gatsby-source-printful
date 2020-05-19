@@ -4,9 +4,25 @@ const PrintfulClient = require('./lib/printful')
 const { parseNameForSlug, parsePriceString } = require('./lib/utils')
 
 exports.sourceNodes = async (
-  { actions: { createNode }, cache, createContentDigest, createNodeId, store },
-  { apiKey }
+  {
+    actions: { createNode },
+    cache,
+    createContentDigest,
+    createNodeId,
+    store,
+    reporter
+  },
+  { apiKey, paginationLimit = 20 }
 ) => {
+  if (
+    !paginationLimit ||
+    !Number.isInteger(paginationLimit) ||
+    paginationLimit > 100
+  )
+    return reporter.panic(
+      'gatsby-source-printful: `paginationLimit` must be an integer, no greater than 100'
+    )
+
   const printful = new PrintfulClient({
     apiKey
   })
@@ -18,13 +34,13 @@ exports.sourceNodes = async (
 
     while (keepGoing) {
       const { paging, result } = await printful.get(
-        `sync/products?limit=100&offset=${offset}`
+        `sync/products?limit=${paginationLimit}&offset=${offset}`
       )
 
       records = [...records, ...result]
-      offset += 100
+      offset += paginationLimit
 
-      if (result.length < 100 || paging.total === records.length) {
+      if (result.length < paginationLimit || paging.total === records.length) {
         keepGoing = false
 
         return records
