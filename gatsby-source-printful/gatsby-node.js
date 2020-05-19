@@ -4,20 +4,62 @@ const PrintfulClient = require('./lib/printful')
 const { parseNameForSlug, parsePriceString } = require('./lib/utils')
 
 exports.sourceNodes = async (
-  { actions: { createNode }, cache, createContentDigest, createNodeId, store },
-  { apiKey }
+  {
+    actions: { createNode },
+    cache,
+    createContentDigest,
+    createNodeId,
+    store,
+    reporter
+  },
+  { apiKey, paginationLimit = 20 }
 ) => {
+  if (!apiKey)
+    return reporter.panic(
+      'gatsby-source-printful: You must provide your Printful API key'
+    )
+
+  if (
+    !paginationLimit ||
+    !Number.isInteger(paginationLimit) ||
+    paginationLimit > 100
+  )
+    return reporter.panic(
+      'gatsby-source-printful: `paginationLimit` must be an integer, no greater than 100'
+    )
+
   const printful = new PrintfulClient({
     apiKey
   })
 
-  const { result } = await printful.get('sync/products')
+  const getAllProducts = async () => {
+    let records = []
+    let keepGoing = true
+    let offset = 0
+
+    while (keepGoing) {
+      const { paging, result } = await printful.get(
+        `sync/products?limit=${paginationLimit}&offset=${offset}`
+      )
+
+      records = [...records, ...result]
+      offset += paginationLimit
+
+      if (result.length < paginationLimit || paging.total === records.length) {
+        keepGoing = false
+
+        return records
+      }
+    }
+  }
+
+  const result = await getAllProducts()
   const products = await Promise.all(
     result.map(async ({ id }) => await printful.get(`sync/products/${id}`))
   )
   const { result: countries } = await printful.get(`countries`)
 
-  const processCountry = async country => {
+  const processCountry = async (country) => {
     const nodeData = {
       ...country,
       id: `country-${country.code}`,
@@ -67,7 +109,7 @@ exports.sourceNodes = async (
 
   const processVariant = async ({ variant, product }) => {
     const { external_id, variant_id, ...rest } = variant
-    const previewFile = variant.files.find(file => file.type === `preview`)
+    const previewFile = variant.files.find((file) => file.type === `preview`)
 
     let variantImageNode
 
@@ -107,7 +149,7 @@ exports.sourceNodes = async (
       async ({
         result: { sync_product: product, sync_variants: variants }
       }) => {
-        await variants.map(async variant =>
+        await variants.map(async (variant) =>
           createNode(await processVariant({ variant, product }))
         )
 
@@ -117,6 +159,6 @@ exports.sourceNodes = async (
   )
 
   await Promise.all(
-    countries.map(async country => createNode(await processCountry(country)))
+    countries.map(async (country) => createNode(await processCountry(country)))
   )
 }

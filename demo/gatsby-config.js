@@ -5,7 +5,8 @@ module.exports = {
     {
       resolve: 'gatsby-source-printful',
       options: {
-        apiKey: process.env.PRINTFUL_API_KEY
+        apiKey: process.env.PRINTFUL_API_KEY,
+        paginationLimit: 100
       }
     },
     'gatsby-plugin-sharp',
