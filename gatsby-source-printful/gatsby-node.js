@@ -17,14 +17,14 @@ exports.sourceNodes = async (
     let offset = 0
 
     while (keepGoing) {
-      const { result } = await printful.get(
+      const { paging, result } = await printful.get(
         `sync/products?limit=100&offset=${offset}`
       )
 
       records = [...records, ...result]
       offset += 100
 
-      if (result.length < 100) {
+      if (result.length < 100 || paging.total === records.length) {
         keepGoing = false
 
         return records
