@@ -18,7 +18,8 @@ plugins: [
   {
     resolve: `gatsby-source-printful`,
     options: {
-      apiKey: '...'
+      apiKey: '...',
+      paginationLimit: 100 // Default value is 20
     },
   },
 ],
