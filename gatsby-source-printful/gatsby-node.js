@@ -73,14 +73,14 @@ exports.sourceNodes = async (
   }
 
   const processProduct = async ({ product, variants }) => {
-    const { external_id, variants: variantCount, ...rest } = product
+    const { variants, ...rest } = product
 
     let productImageNode
 
     try {
       const { id } = await createRemoteFileNode({
         url: product.thumbnail_url,
-        parentNodeId: external_id,
+        parentNodeId: product.id,
         store,
         cache,
         createNode,
@@ -95,9 +95,8 @@ exports.sourceNodes = async (
     const nodeData = {
       ...rest,
       slug: parseNameForSlug(product.name),
-      variants___NODE: variants.map(({ external_id: id }) => id),
+      variants___NODE: variants.map(({ id }) => id),
       productImage___NODE: productImageNode,
-      id: external_id,
       internal: {
         type: `PrintfulProduct`,
         contentDigest: createContentDigest(product)
@@ -108,7 +107,6 @@ exports.sourceNodes = async (
   }
 
   const processVariant = async ({ variant, product }) => {
-    const { external_id, variant_id, ...rest } = variant
     const previewFile = variant.files.find((file) => file.type === `preview`)
 
     let variantImageNode
@@ -117,7 +115,7 @@ exports.sourceNodes = async (
       try {
         const { id } = await createRemoteFileNode({
           url: previewFile.preview_url,
-          parentNodeId: external_id,
+          parentNodeId: variant.id,
           store,
           cache,
           createNode,
@@ -131,12 +129,11 @@ exports.sourceNodes = async (
     }
 
     const nodeData = {
-      ...rest,
+      ...variant,
       slug: parseNameForSlug(variant.name),
       retail_price: parsePriceString(variant.retail_price),
-      parentProduct___NODE: product.external_id,
+      parentProduct___NODE: product.id,
       variantImage___NODE: variantImageNode,
-      id: external_id,
       internal: {
         type: `PrintfulVariant`,
         contentDigest: createContentDigest(variant)
