@@ -4,5 +4,6 @@
   "major": {
     "automerge": false
   },
-  "reviewers": ["ynnoj"]
+  "reviewers": ["ynnoj"],
+  "semanticCommits": true
 }
