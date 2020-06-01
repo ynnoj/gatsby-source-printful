@@ -16,7 +16,7 @@
       },
       {
         "name": "beta",
-        "prerelase": true
+        "prerelease": true
       }
     ],
     "plugins": [
