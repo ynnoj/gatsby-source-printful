@@ -10,6 +10,15 @@
     "dev": "yarn workspace demo dev"
   },
   "release": {
+    "branches": [
+      {
+        "name": "master"
+      },
+      {
+        "name": "beta",
+        "prerelase": true
+      }
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
