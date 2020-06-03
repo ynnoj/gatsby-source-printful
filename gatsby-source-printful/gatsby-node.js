@@ -73,14 +73,15 @@ exports.sourceNodes = async (
   }
 
   const processProduct = async ({ product, variants }) => {
-    const { external_id, variants: variantCount, ...rest } = product
+    const { variants: variantCount, ...rest } = product
+    const sync_product_id = product.id.toString()
 
     let productImageNode
 
     try {
       const { id } = await createRemoteFileNode({
         url: product.thumbnail_url,
-        parentNodeId: external_id,
+        parentNodeId: sync_product_id,
         store,
         cache,
         createNode,
@@ -94,10 +95,10 @@ exports.sourceNodes = async (
 
     const nodeData = {
       ...rest,
+      id: sync_product_id,
       slug: parseNameForSlug(product.name),
-      variants___NODE: variants.map(({ external_id: id }) => id),
+      variants___NODE: variants.map(({ id }) => id.toString()),
       productImage___NODE: productImageNode,
-      id: external_id,
       internal: {
         type: `PrintfulProduct`,
         contentDigest: createContentDigest(product)
@@ -108,7 +109,9 @@ exports.sourceNodes = async (
   }
 
   const processVariant = async ({ variant, product }) => {
-    const { external_id, variant_id, ...rest } = variant
+    const sync_product_id = product.id.toString()
+    const sync_variant_id = variant.id.toString()
+
     const previewFile = variant.files.find((file) => file.type === `preview`)
 
     let variantImageNode
@@ -117,7 +120,7 @@ exports.sourceNodes = async (
       try {
         const { id } = await createRemoteFileNode({
           url: previewFile.preview_url,
-          parentNodeId: external_id,
+          parentNodeId: sync_variant_id,
           store,
           cache,
           createNode,
@@ -131,12 +134,12 @@ exports.sourceNodes = async (
     }
 
     const nodeData = {
-      ...rest,
+      ...variant,
+      id: sync_variant_id,
       slug: parseNameForSlug(variant.name),
       retail_price: parsePriceString(variant.retail_price),
-      parentProduct___NODE: product.external_id,
+      parentProduct___NODE: sync_product_id,
       variantImage___NODE: variantImageNode,
-      id: external_id,
       internal: {
         type: `PrintfulVariant`,
         contentDigest: createContentDigest(variant)
