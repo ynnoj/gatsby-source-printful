@@ -69,6 +69,12 @@ exports.sourceNodes = async (
     []
   )
 
+  const catalogVariants = await Promise.all(
+    uniqueCatalogVariantIds.map(
+      async (id) => await printful.get(`products/variant/${id}`)
+    )
+  )
+
   const { result: countries } = await printful.get(`countries`)
 
   const processCountry = async (country) => {
