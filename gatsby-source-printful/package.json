@@ -13,7 +13,7 @@
   "author": "Jonathan Steele <jonathan@steele.pro> (https://steele.pro)",
   "license": "MIT",
   "dependencies": {
-    "gatsby-source-filesystem": "2.3.8",
+    "gatsby-source-filesystem": "2.3.10",
     "isomorphic-unfetch": "3.0.0"
   }
 }
