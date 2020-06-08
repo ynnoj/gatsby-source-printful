@@ -158,10 +158,44 @@ exports.sourceNodes = async (
       retail_price: parsePriceString(variant.retail_price),
       parentProduct___NODE: sync_product_id,
       catalogVariant___NODE: variant.variant_id.toString(),
+      catalogProduct___NODE: variant.product.product_id.toString(),
       variantImage___NODE: variantImageNode,
       internal: {
         type: `PrintfulVariant`,
         contentDigest: createContentDigest(variant)
+      }
+    }
+
+    return nodeData
+  }
+
+  const processCatalogProduct = async ({ product: { id, ...product } }) => {
+    const product_id = id.toString()
+
+    let productImageNode
+
+    try {
+      const { id } = await createRemoteFileNode({
+        url: product.image,
+        parentNodeId: product_id,
+        store,
+        cache,
+        createNode,
+        createNodeId
+      })
+
+      productImageNode = id
+    } catch (e) {
+      console.error('gatsby-source-printful:', e)
+    }
+
+    const nodeData = {
+      ...product,
+      id: product_id,
+      productImage___NODE: productImageNode,
+      internal: {
+        type: `PrintfulCatalogProduct`,
+        contentDigest: createContentDigest(product)
       }
     }
 
@@ -218,9 +252,10 @@ exports.sourceNodes = async (
         createNode(await processProduct({ product, variants }))
       }
     ),
-    catalogVariants.map(async ({ result: { variant } }) =>
+    catalogVariants.map(async ({ result: { product, variant } }) => {
+      createNode(await processCatalogProduct({ product }))
       createNode(await processCatalogVariant({ variant }))
-    )
+    })
   )
 
   await Promise.all(
