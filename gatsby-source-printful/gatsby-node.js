@@ -2,18 +2,11 @@ const { createRemoteFileNode } = require('gatsby-source-filesystem')
 
 const PrintfulClient = require('./lib/printful')
 const { parseNameForSlug, parsePriceString } = require('./lib/utils')
+const withDefaultOptions = require('./plugin-options')
 
-exports.sourceNodes = async (
-  {
-    actions: { createNode },
-    cache,
-    createContentDigest,
-    createNodeId,
-    store,
-    reporter
-  },
-  { apiKey, paginationLimit = 20 }
-) => {
+exports.onPreBootstrap = ({ reporter }, pluginOptions) => {
+  const { apiKey, paginationLimit } = withDefaultOptions(pluginOptions)
+
   if (!apiKey)
     return reporter.panic(
       'gatsby-source-printful: You must provide your Printful API key'
@@ -27,6 +20,13 @@ exports.sourceNodes = async (
     return reporter.panic(
       'gatsby-source-printful: `paginationLimit` must be an integer, no greater than 100'
     )
+}
+
+exports.sourceNodes = async (
+  { actions: { createNode }, cache, createContentDigest, createNodeId, store },
+  pluginOptions
+) => {
+  const { apiKey, paginationLimit } = withDefaultOptions(pluginOptions)
 
   const printful = new PrintfulClient({
     apiKey
