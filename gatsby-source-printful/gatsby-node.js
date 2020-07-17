@@ -268,7 +268,7 @@ exports.sourceNodes = async (
     })
   )
 
-  Promise.all(
+  await Promise.all(
     countries.map(async (country) => createNode(await processCountry(country)))
   )
 
