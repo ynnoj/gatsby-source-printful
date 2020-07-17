@@ -265,8 +265,12 @@ exports.sourceNodes = async (
     catalogVariants.map(async ({ result: { product, variant } }) => {
       createNode(await processCatalogProduct({ product }))
       createNode(await processCatalogVariant({ variant }))
-    }),
-    countries.map(async (country) => createNode(await processCountry(country))),
-    createNode(await processStoreInformation(storeInformation))
+    })
   )
+
+  Promise.all(
+    countries.map(async (country) => createNode(await processCountry(country)))
+  )
+
+  await createNode(await processStoreInformation(storeInformation))
 }
