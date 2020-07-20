@@ -76,6 +76,7 @@ exports.sourceNodes = async (
   )
 
   const { result: countries } = await printful.get(`countries`)
+  const { result: storeInformation } = await printful.get(`store`)
 
   const processCountry = async (country) => {
     const nodeData = {
@@ -240,6 +241,15 @@ exports.sourceNodes = async (
     return nodeData
   }
 
+  const processStoreInformation = async ({ payment_card, ...store }) => ({
+    ...store,
+    id: `store-${id.toString}`,
+    internal: {
+      type: `PrintfulStore`,
+      contentDigest: createContentDigest(store)
+    }
+  })
+
   await Promise.all(
     products.map(
       async ({
@@ -261,4 +271,6 @@ exports.sourceNodes = async (
   await Promise.all(
     countries.map(async (country) => createNode(await processCountry(country)))
   )
+
+  await createNode(await processStoreInformation(storeInformation))
 }
