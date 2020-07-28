@@ -241,7 +241,7 @@ exports.sourceNodes = async (
     return nodeData
   }
 
-  const processStoreInformation = async ({ payment_card, ...store }) => ({
+  const processStoreInformation = async ({ id, payment_card, ...store }) => ({
     ...store,
     id: `store-${id.toString}`,
     internal: {
