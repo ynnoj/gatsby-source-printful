@@ -243,7 +243,7 @@ exports.sourceNodes = async (
 
   const processStoreInformation = async ({ id, payment_card, ...store }) => ({
     ...store,
-    id: `store-${id.toString()}`,
+    id: id.toString(),
     internal: {
       type: `PrintfulStore`,
       contentDigest: createContentDigest(store)
