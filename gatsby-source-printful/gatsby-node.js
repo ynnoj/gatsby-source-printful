@@ -251,6 +251,10 @@ exports.sourceNodes = async (
   })
 
   await Promise.all(
+    catalogVariants.map(async ({ result: { product, variant } }) => {
+      createNode(await processCatalogProduct({ product }))
+      createNode(await processCatalogVariant({ variant }))
+    }),
     products.map(
       async ({
         result: { sync_product: product, sync_variants: variants }
@@ -261,11 +265,7 @@ exports.sourceNodes = async (
 
         createNode(await processProduct({ product, variants }))
       }
-    ),
-    catalogVariants.map(async ({ result: { product, variant } }) => {
-      createNode(await processCatalogProduct({ product }))
-      createNode(await processCatalogVariant({ variant }))
-    })
+    )
   )
 
   await Promise.all(
