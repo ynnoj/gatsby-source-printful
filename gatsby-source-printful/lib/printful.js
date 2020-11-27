@@ -17,14 +17,12 @@ class PrintfulClient {
       }
     })
 
-    const json = await response.json()
+    if (!response.ok)
+      throw new Error(
+        `Printful API: [${response.status}] ${response.statusText}`
+      )
 
-    if (!response.ok) {
-      throw {
-        statusCode: response.status,
-        ...json
-      }
-    }
+    const json = await response.json()
 
     return json
   }
