@@ -58,20 +58,20 @@ exports.sourceNodes = async (
     result.map(async ({ id }) => await printful.get(`sync/products/${id}`))
   )
 
-  const catalogVariantIds = products
+  const catalogProductIds = products
     .map(({ result: { sync_variants: variants } }) =>
-      variants.map(({ variant_id }) => variant_id)
+      variants.map(({ product }) => product.product_id)
     )
     .flat()
 
-  const uniqueCatalogVariantIds = catalogVariantIds.reduce(
+  const uniqueCatalogProductIds = catalogProductIds.reduce(
     (unique, item) => (unique.includes(item) ? unique : [...unique, item]),
     []
   )
 
-  const catalogVariants = await Promise.all(
-    uniqueCatalogVariantIds.map(
-      async (id) => await printful.get(`products/variant/${id}`)
+  const catalogProducts = await Promise.all(
+    uniqueCatalogProductIds.map(
+      async (id) => await printful.get(`products/${id}`)
     )
   )
 
@@ -251,16 +251,23 @@ exports.sourceNodes = async (
   })
 
   await Promise.all(
-    catalogVariants.map(async ({ result: { product, variant } }) => {
+    catalogProducts.map(async ({ result: { product, variants } }) => {
       createNode(await processCatalogProduct({ product }))
-      createNode(await processCatalogVariant({ variant }))
+
+      await Promise.all(
+        variants.map(async (variant) =>
+          createNode(await processCatalogVariant({ variant }))
+        )
+      )
     }),
     products.map(
       async ({
         result: { sync_product: product, sync_variants: variants }
       }) => {
-        await variants.map(async (variant) =>
-          createNode(await processVariant({ variant, product }))
+        await Promise.all(
+          variants.map(async (variant) =>
+            createNode(await processVariant({ variant, product }))
+          )
         )
 
         createNode(await processProduct({ product, variants }))
