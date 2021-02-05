@@ -1,16 +1,18 @@
-# gatsby-source-printful
+<h2 align="center">
+  gatsby-source-printful
+</h2>
 
-👕 Gatsby source plugin for pulling product and variant data from [Printful](https://printful.com)
+<p align="center">
+  Printful store data for your Gatsby projects
+</p>
 
-• [Demo](https://gatsby-source-printful.now.sh)
-
-## Install
+## Getting Started
 
 ```sh
 yarn add gatsby-source-printful
 ```
 
-## How to use
+### Configuration
 
 ```js
 // In your gatsby-config.js
