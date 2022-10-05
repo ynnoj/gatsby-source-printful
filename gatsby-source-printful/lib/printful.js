@@ -1,7 +1,5 @@
 const fetch = require('isomorphic-unfetch')
 
-const { base64Encode } = require('./utils')
-
 class PrintfulClient {
   constructor({ apiKey }) {
     this.printfulApiKey = apiKey
@@ -13,7 +11,7 @@ class PrintfulClient {
     const response = await fetch(uri, {
       method,
       headers: {
-        Authorization: `Basic ${base64Encode(this.printfulApiKey)}`
+        Authorization: `Bearer ${this.printfulApiKey}`
       }
     })
 
