@@ -13,7 +13,7 @@
     "printful"
   ],
   "dependencies": {
-    "gatsby-source-filesystem": "2.11.1",
+    "gatsby-source-filesystem": "5.13.1",
     "isomorphic-unfetch": "3.1.0"
   }
 }
