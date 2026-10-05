@@ -8,7 +8,7 @@
     "dev": "gatsby develop"
   },
   "dependencies": {
-    "gatsby": "2.32.13",
+    "gatsby": "4.25.7",
     "gatsby-image": "2.11.0",
     "gatsby-plugin-sharp": "2.14.4",
     "gatsby-source-printful": "*",
